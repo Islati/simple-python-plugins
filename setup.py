@@ -1,0 +1,29 @@
+#!/usr/bin/python3
+
+from setuptools import setup
+
+
+def main():
+    setup(
+        name='simpleplugins',
+        version='0.1.0',
+        packages=[
+            'simpleplugins'
+        ],
+        url='https://github.com/TechnicalBro/simple-python-plugins',
+        license='LICENSE.txt',
+        author='Brandon Curtis',
+        author_email='freebird.brandon@gmail.com',
+        description='Extremely simple python plugin framework!',
+        test_suite='tests',
+        tests_require=[
+            'py',
+            'pytest',
+            'pytest-cov',
+            'pytest-random'
+        ],
+    )
+
+
+if __name__ == "__main__":
+    main()

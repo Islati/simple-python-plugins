@@ -18,11 +18,14 @@ logging_config = dict(
     handlers={
         'h': {'class': 'logging.StreamHandler',
               'formatter': 'f',
-              'level': logging.DEBUG}
+              'level': logging.DEBUG
+              }
     },
     loggers={
-        'root': {'handlers': ['h'],
-                 'level': logging.DEBUG}
+        'root': {
+            'handlers': ('h'),
+            'level': 'DEBUG'
+        }
     }
 )
 
@@ -187,7 +190,7 @@ class PluginManager(object):
                 logger.debug("Registered plugin %s from %s %s" % (
                     fplugin.name, "module" if inspect.ismodule(plugin_file) else "file",
                     get_filename(plugin_file) if not inspect.ismodule(plugin_file) else plugin_file.__name__)
-                            )
+                             )
 
                 # Then if we're going to activate the plugin, do so!
                 if activate:

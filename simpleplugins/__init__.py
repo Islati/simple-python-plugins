@@ -4,15 +4,31 @@ import inspect
 import os
 from importlib.util import spec_from_file_location
 
-from logging.config import fileConfig, logging
+import logging
+from logging.config import dictConfig
 
 __dirname, __init_python_script = os.path.split(os.path.abspath(__file__))
 
-fileConfig(os.path.join(__dirname, "logging_config.ini"))
+logging_config = dict(
+    version=1,
+    formatters={
+        'f': {'format':
+                  '%(asctime)s %(name)-12s %(levelname)-8s %(message)s'}
+    },
+    handlers={
+        'h': {'class': 'logging.StreamHandler',
+              'formatter': 'f',
+              'level': logging.DEBUG}
+    },
+    loggers={
+        'root': {'handlers': ['h'],
+                 'level': logging.DEBUG}
+    }
+)
+
+dictConfig(logging_config)
 
 logger = logging.getLogger()
-
-__dirname, __init_python_script = os.path.split(os.path.abspath(__file__))
 
 
 def get_files_recursive(path, match='*.py'):
@@ -126,7 +142,7 @@ class PluginManager(object):
                     # Assign the plugin (via name) to the dictionary of registered plugins
                     self.plugins[plugin.name] = plugin
                     # Give a little output of the plugin!
-                    logger.info("Registered plugin %s from %s in %s" % (plugin.name, file, directory))
+                    logger.debug("Registered plugin %s from %s in %s" % (plugin.name, file, directory))
 
                     # Then if we're going to activate the plugin, do so!
                     if activate:
@@ -168,7 +184,7 @@ class PluginManager(object):
                 # Assign the plugin (via name) to the dictionary of registered plugins
                 self.plugins[fplugin.name] = fplugin
                 # Give a little output of the plugin!
-                logger.info("Registered plugin %s from %s %s" % (
+                logger.debug("Registered plugin %s from %s %s" % (
                     fplugin.name, "module" if inspect.ismodule(plugin_file) else "file",
                     get_filename(plugin_file) if not inspect.ismodule(plugin_file) else plugin_file.__name__)
                             )
@@ -186,7 +202,7 @@ class PluginManager(object):
 
             # Otherwise register the plugin, and (potentially) activate it!
             self.plugins[plugin.name] = plugin
-            logger.info("Registered plugin %s" % plugin.name)
+            logger.debug("Registered plugin %s" % plugin.name)
             if activate:
                 self.plugins[plugin.name].activate()
 

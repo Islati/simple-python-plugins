@@ -1,11 +1,9 @@
-from urllib.parse import urlsplit
 import fnmatch
 import inspect
 import os
 from importlib.util import spec_from_file_location
 
 import logging
-from logging.config import dictConfig
 import sys
 
 __dirname, __init_python_script = os.path.split(os.path.abspath(__file__))

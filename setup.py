@@ -25,7 +25,6 @@ def main():
         classifiers=[
             'Development Status :: 5 - Production/Stable',
             'Intended Audience :: Developers',
-            'Intended Audience :: System Administrators',
             'Natural Language :: English',
             'License :: OSI Approved :: MIT License',
             'Programming Language :: Python',

@@ -6,32 +6,19 @@ from importlib.util import spec_from_file_location
 
 import logging
 from logging.config import dictConfig
+import sys
 
 __dirname, __init_python_script = os.path.split(os.path.abspath(__file__))
 
-logging_config = dict(
-    version=1,
-    formatters={
-        'f': {'format':
-                  '%(asctime)s %(name)-12s %(levelname)-8s %(message)s'}
-    },
-    handlers={
-        'h': {'class': 'logging.StreamHandler',
-              'formatter': 'f',
-              'level': logging.DEBUG
-              }
-    },
-    loggers={
-        'root': {
-            'handlers': ('h'),
-            'level': 'DEBUG'
-        }
-    }
-)
+logger = logging.getLogger("SimplePlugins")
 
-dictConfig(logging_config)
+formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+console_log_handler = logging.StreamHandler(stream=sys.stdout)
+console_log_handler.setFormatter(formatter)
+console_log_handler.setLevel(logging.DEBUG)
 
-logger = logging.getLogger()
+logger.addHandler(console_log_handler)
+logger.setLevel(logging.DEBUG)
 
 
 def get_files_recursive(path, match='*.py'):
@@ -107,6 +94,11 @@ class PluginManager(object):
 
     def register(self, plugin=None, plugin_file=None, directory=None, skip_types=None, override=False, activate=True):
         # Double verify that there's types to skip. We don't want to register "Base" types (Plugin)
+
+        if not isinstance(skip_types, list):
+            skip_types = [skip_types]
+            logger.debug("Skip Types must be a list. Created list with values passed.")
+
         if skip_types is None:
             skip_types = [Plugin]
         else:
@@ -283,7 +275,7 @@ class PluginManager(object):
         if not self.has_plugin(name):
             return None
 
-        return self.plugins[name].plugin
+        return self.plugins[name]
 
     def has_plugin(self, name=None, plugin_type=None):
         # If there's no arguments passed to this, then we check if there's simply any plugins

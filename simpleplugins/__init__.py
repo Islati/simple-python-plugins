@@ -20,6 +20,14 @@ logger.setLevel(logging.DEBUG)
 
 
 def get_files_recursive(path, match='*.py'):
+    """
+    Perform a recursive search to find all the files matching the
+    specified search criteria.
+    :param path: Path to begin the recursive search.
+    :param match: String/Regex used to match files with a pattern.
+    :return: Full path of all the files found.
+    :rtype: list
+    """
     matches = []
     for root, dirnames, filenames in os.walk(path):
         for filename in fnmatch.filter(filenames, match):
@@ -29,19 +37,24 @@ def get_files_recursive(path, match='*.py'):
 
 
 def get_filename(file):
+    """
+    Safe method to retrieve only the name of the file.
+    :param file: Path of the file to retrieve the name from.
+    :return: None if the file is non-existant, otherwise the filename (extension included)
+    :rtype: None, str
+    """
     if not os.path.exists(file):
         return None
     return "%s%s" % os.path.splitext(file)
 
 
 def import_module_from_file(full_path_to_module):
-    if inspect.ismodule(full_path_to_module):
-        return full_path_to_module
-
     """
     Import a module given the full path/filename of the .py file
     Python 3.4
     """
+    if inspect.ismodule(full_path_to_module):
+        return full_path_to_module
 
     module = None
 
@@ -70,6 +83,10 @@ class PluginException(Exception):
 
 
 class Plugin(object):
+    """
+    Base class that all plugins derive from.
+    """
+
     def __init__(self, **kwargs):
         self.name = kwargs.pop('name', self.__class__.__name__)
         self.version = kwargs.pop('version', "1.0.0")
@@ -77,20 +94,54 @@ class Plugin(object):
         self.active = False
 
     def activate(self):
+        """
+        Operations to perform whenever the plugin is activated.
+        :return:
+        """
         raise NotImplementedError("Activation for %s is not implemented" % self.name)
 
     def deactivate(self):
+        """
+        Operations to perform whenever the plugin is deactivated.
+        :return:
+        """
         raise NotImplementedError("Deactivation for %s is not implemented" % self.name)
 
     def perform(self, **kwargs):
+        """
+        Operations that will be performed when invoked.
+        This method is where the actual "use" logic of plugins will be defined.
+        :param kwargs:
+        :return:
+        """
         raise NotImplementedError("Perform for %s is not implemented" % self.name)
 
 
 class PluginManager(object):
+    """
+    Holds instances, and information for each plugin.
+    Provides functionality to interact, activate, deactivate, perform, and operate with or on plugins.
+    """
+
     def __init__(self):
         self.plugins = {}
 
     def register(self, plugin=None, plugin_file=None, directory=None, skip_types=None, override=False, activate=True):
+        """
+        Register a plugin, or plugins to be managed and recognized by the plugin manager.
+        Will take a plugin instance, file where a plugin / plugin(s) reside, parent directory
+        that holds plugin(s), or sub-folders with plugin(s).
+
+        Will optionally "activate" the plugins, and perform any operations defined in their "activate" method.
+
+        :param plugin: Plugin Instance to register.
+        :param plugin_file: str: File (full path) to scan for Plugins.
+        :param directory: str: Directory to perform a recursive scan on for Plugins.
+        :param skip_types: list: Types of plugins to skip when found, during a scan / search.
+        :param override: bool: Whether or not to override registered plugin when it's being registered again.
+        :param activate: bool: Whether or not to activate the plugins upon registration.
+        :return: Does not Return.
+        """
         # Double verify that there's types to skip. We don't want to register "Base" types (Plugin)
 
         if not isinstance(skip_types, list):
@@ -234,6 +285,13 @@ class PluginManager(object):
                 plugin.activate()
 
     def unregister(self, plugin=None, plugin_file=None):
+        """
+        Unregister all plugins, or a specific plugin, via an instance, or file (path) containing plugin(s).
+        When this method is called without any arguments then all plugins will be deactivated.
+        :param plugin: Plugin to unregister.
+        :param plugin_file: File containing plugin(s) to unregister.
+        :return: Does not Return.
+        """
         if plugin is None and plugin_file is None:
             for name, plugin in self.plugins.items():
                 plugin.deactivate()
@@ -259,6 +317,13 @@ class PluginManager(object):
                 del self.plugins[classPlugin.name]
 
     def get_plugins(self, plugin_type=None):
+        """
+        Retrieve a list of plugins in the PluginManager.
+        All plugins if no arguments are provides, or of the specified type.
+        :param plugin_type: list: Types of plugins to retrieve from the plugin manager.
+        :return: Plugins being managed by the Manager (optionally of the desired plugin_type).
+        :rtype: list
+        """
         if plugin_type is None:
             return self.plugins.values()
 
@@ -270,12 +335,31 @@ class PluginManager(object):
         return plugin_list
 
     def get_plugin(self, name):
+        """
+        Retrieve a registered plugin by its name.
+        :param name: Name of the plugin to retrieve.
+        :return: None if the manager has no plugin of the given name, otherwise the plugin instance matching the given name.
+        :rtype: None / Plugin
+        """
         if not self.has_plugin(name):
             return None
 
         return self.plugins[name]
 
     def has_plugin(self, name=None, plugin_type=None):
+        """
+        Check if the manager has a plugin / plugin(s), either by its name, type, or simply checking if the
+        manager has any plugins registered in it.
+
+        Utilizing the name argument will check if a plugin with that name exists in the manager.
+        Using both the name and plugin_type arguments will check if a plugin with that name, and type, exists.
+
+        Using only the plugin_type argument will check if any plugins matching the type specified are registered
+        in the plugin manager.
+        :param name: Name of the plugin to check for.
+        :param plugin_type: Plugin Type to check for.
+        :return:
+        """
         # If there's no arguments passed to this, then we check if there's simply any plugins
         # Registered in the plugin manager.
         if name is None and plugin_type is None:
@@ -300,6 +384,12 @@ class PluginManager(object):
 
     @staticmethod
     def scan_for_plugins(directory):
+        """
+        Scan a directory for modules that contains plugin(s).
+        :param directory: Path of the folder/directory to scan.
+        :return: Dictionary of file (key) and plugins (value), where the key is the path of the module and value is a list of plugins inside that module.
+        :rtype: dict
+        """
         if not os.path.exists(os.path.expanduser(directory)):
             raise FileNotFoundError("Unable to locate directory %s" % directory)
 
@@ -316,17 +406,20 @@ class PluginManager(object):
         return plugins
 
     @staticmethod
-    def get_plugins_in_module(module_path, supress=False):
+    def get_plugins_in_module(module_path, suppress=False):
         """
-
-        :rtype : list
+        Inspect a module, via its path, and retrieve a list of the plugins inside the module.
+        :param module_path: Path of the module to inspect.
+        :param suppress: Whether or not to suppresss exceptions.
+        :raises: PluginException
+        :return: A list of all the plugins inside the specified module.
+        :rtype: list
         """
-
         module = module_path if inspect.ismodule(module_path) else import_module_from_file(module_path)
         if module is None:
             # CHeck if we're repressing errors.. Sometimes, such in the case of scanning a dir,
             # This is BOUND to return none.
-            if supress is False:
+            if suppress is False:
                 raise PluginException("Unable to find plugins inside module at %s" % module)
             return None
 

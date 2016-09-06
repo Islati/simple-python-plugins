@@ -396,7 +396,7 @@ class PluginManager(object):
         files_in_dir = get_files_recursive(directory)
         plugins = {}
         for file in files_in_dir:
-            plugins_in_module = PluginManager.get_plugins_in_module(file, supress=True)
+            plugins_in_module = PluginManager.get_plugins_in_module(file, suppress=True)
 
             if plugins_in_module is None:
                 continue

@@ -382,6 +382,13 @@ class PluginManager(object):
         # has a plugin registered with the given name!
         return name in self.plugins
 
+    def __call__(self, *args, **kwargs):
+        if 'plugin' in kwargs.keys() or 'name' in kwargs.keys():
+            return self.get_plugin(kwargs.get('name') or kwargs.get('plugin'))
+
+
+
+
     @staticmethod
     def scan_for_plugins(directory):
         """

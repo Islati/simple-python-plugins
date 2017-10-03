@@ -1,0 +1,17 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[dev-packages]
+
+[packages]
+
+py = "==1.4.31"
+pytest = "==2.8.7"
+"pytest-cov" = "==2.2.0"
+"pytest-random" = "==0.2"
+
+
+[requires]
+python_version = "3.5"

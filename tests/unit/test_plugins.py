@@ -46,3 +46,6 @@ def test_plugin_manager(plugin_manager, base_plugin, clean_operation, build_oper
 
     assert plugin_manager.has_plugin("cookiecutter-commons-minigame")
     assert plugin_manager.has_plugin("cookiecutter-commons-bukkitplugin")
+
+    assert plugin_manager(name='cookiecutter-commons-minigame') is not None
+    assert plugin_manager(plugin='cookiecutter-commons-minigame').name == 'cookiecutter-commons-minigame'
